@@ -276,7 +276,8 @@ export function containerCreateOptions(input: ComputerCreateInput) {
       PortBindings: ports.PortBindings,
       ShmSize: 256 * 1024 * 1024,
       CapDrop: ["ALL"],
-      SecurityOpt: ["no-new-privileges:true"],
+      SecurityOpt:
+        process.env.RAKAZO_DISABLE_NO_NEW_PRIVS === "true" ? [] : ["no-new-privileges:true"],
       ...computerResourceLimits(),
       ReadonlyPaths: ["/usr/share/novnc"],
       AutoRemove: false,

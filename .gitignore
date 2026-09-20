@@ -47,3 +47,5 @@ apps/web/src/locales/**/*.js
 apps/web/scripts/msgids.json
 playwright-report-www
 LOCAL_SETUP_GUIDE.md
+AGENT_RUNBOOK.md
+
