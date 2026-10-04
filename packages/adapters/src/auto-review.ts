@@ -147,6 +147,7 @@ export function isAutoReviewCheckerConfigured(input: {
   if (checker.provider === deployment.provider && deployment.key) return true;
   if (env.OPENROUTER_API_KEY?.trim() && checker.provider === "openrouter") return true;
   if (env.ANTHROPIC_API_KEY?.trim() && checker.provider === "anthropic") return true;
+  if (env.GROQ_API_KEY?.trim() && checker.provider === "groq") return true;
   return Boolean(input.hasUserCredentialForProvider?.(checker.provider));
 }
 

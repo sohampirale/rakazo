@@ -15,6 +15,13 @@ describe("resolveDeploymentModel", () => {
       model: "claude-sonnet-5",
       key: "sk-ant-key",
     });
+    expect(
+      resolveDeploymentModel({ GROQ_API_KEY: "gsk-key", PI_DEFAULT_PROVIDER: "groq" }),
+    ).toEqual({
+      provider: "groq",
+      model: "openai/gpt-oss-120b",
+      key: "gsk-key",
+    });
     // A provider with no key configured yields no key — never another vendor's.
     expect(
       resolveDeploymentModel({ OPENROUTER_API_KEY: "or-key", PI_DEFAULT_PROVIDER: "anthropic" }),

@@ -14,10 +14,12 @@ export function resolveDeploymentModel(env: NodeJS.ProcessEnv = process.env) {
   const keys: Record<string, string | undefined> = {
     openrouter: env.OPENROUTER_API_KEY,
     anthropic: env.ANTHROPIC_API_KEY,
+    groq: env.GROQ_API_KEY,
   };
   const models: Record<string, string> = {
     openrouter: DEFAULT_OPENROUTER_MODEL_ID,
     anthropic: "claude-sonnet-5",
+    groq: "openai/gpt-oss-120b",
   };
   return {
     provider,

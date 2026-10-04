@@ -111,6 +111,15 @@ describe("isAutoReviewCheckerConfigured", () => {
     ).toBe(true);
     expect(
       isAutoReviewCheckerConfigured({
+        env: {
+          PI_DEFAULT_PROVIDER: "groq",
+          PI_DEFAULT_MODEL: "openai/gpt-oss-120b",
+          GROQ_API_KEY: "gsk-key",
+        },
+      }),
+    ).toBe(true);
+    expect(
+      isAutoReviewCheckerConfigured({
         env: { RAKAZO_LOCAL_MODELS: "local-1" },
       }),
     ).toBe(true);

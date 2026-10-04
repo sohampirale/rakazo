@@ -521,7 +521,13 @@ function resolveRuntimeModel(modelConfig: AgentRunRequest["model"]): {
       : // Only OpenRouter may fall back to the OpenRouter env key. Handing it to
         // another provider would ship our key to a vendor it was not issued for.
         (modelConfig.apiKey ??
-        (provider === "openrouter" ? process.env.OPENROUTER_API_KEY : undefined));
+        (provider === "openrouter"
+          ? process.env.OPENROUTER_API_KEY
+          : provider === "anthropic"
+            ? process.env.ANTHROPIC_API_KEY
+            : provider === "groq"
+              ? process.env.GROQ_API_KEY
+              : undefined));
   return { provider, modelId, models, model, apiKey };
 }
 
