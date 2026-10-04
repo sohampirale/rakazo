@@ -4264,6 +4264,8 @@ export function createRunExecutor(deps: ExecutorDeps) {
             ),
           );
         }
+        const errMessage =
+          setupError instanceof Error ? setupError.message : String(setupError);
         const released = await writeComputerRunRequeue(
           deps,
           runId,
@@ -4271,14 +4273,14 @@ export function createRunExecutor(deps: ExecutorDeps) {
           fence,
           resumeCheckpoint,
           heldForTakeover,
-          retryForever ? null : "Run setup failed; retrying",
+          retryForever ? null : `Run setup failed: ${errMessage}`,
         );
         if (released) {
           await deps.prisma.attempt.update({
             where: { id: attempt.id },
             data: {
               status: "setup_failed",
-              error: retryForever ? null : "Run setup failed; retrying",
+              error: `Run setup failed: ${errMessage}`.slice(0, 500),
               finishedAt: new Date(),
             },
           });

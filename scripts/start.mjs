@@ -32,8 +32,18 @@ await new Promise((resolve, reject) => {
 
 console.log("✓ Postgres is running on port 5434.\n");
 
-// 2. Start Rakazo Dev Stack
-console.log("🚀 2. Launching Rakazo dev stack (Web :5173, API :3100, Worker, Supervisor)...");
+// 2. Ensure Prisma client is in sync with database schema
+console.log("🔄 2. Ensuring Prisma client is generated...");
+const dbGen = spawn("pnpm", ["db:generate"], { stdio: "inherit" });
+await new Promise((resolve, reject) => {
+  dbGen.on("close", (code) =>
+    code === 0 ? resolve() : reject(new Error(`pnpm db:generate exited with code ${code}`)),
+  );
+});
+console.log("✓ Prisma client is up to date.\n");
+
+// 3. Start Rakazo Dev Stack
+console.log("🚀 3. Launching Rakazo dev stack (Web :5173, API :3100, Worker, Supervisor)...");
 const dev = spawn("pnpm", ["dev"], { stdio: "inherit" });
 
 const shutdown = () => {
