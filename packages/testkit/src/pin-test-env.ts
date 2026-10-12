@@ -14,6 +14,7 @@ if (!process.env.VERIFY_PROVIDERS) {
     delete process.env.DATABASE_URL;
     delete process.env.REALTIME_DATABASE_URL;
   }
+  delete process.env.RAKAZO_HOST_CODING_DIR;
 }
 delete process.env.AXIOM_TOKEN;
 delete process.env.AXIOM_DATASET;

@@ -32,6 +32,7 @@ import {
   containerNameFor,
   controlPortPublicationMatches,
   homeVolumeMatches,
+  hostCodingMountsMatch,
   hostComputerUser,
   legacyNetworkOwnedSolelyBy,
   publishedLoopbackControlHostPort,
@@ -188,11 +189,13 @@ app.post("/computers", async (c) => {
           info.HostConfig.PortBindings,
           controlViaLoopback,
         );
+        const codingMountsOk = hostCodingMountsMatch(info.HostConfig.Binds, info.HostConfig.Mounts);
         if (
           info.Image === desired.Id &&
           (!networkMode || info.HostConfig.NetworkMode === networkMode) &&
           info.Config.User === computerUser &&
           controlPublishOk &&
+          codingMountsOk &&
           (!storage.homeVolume || homeVolumeMatches(info.HostConfig.Mounts, storage.homeVolume))
         ) {
           if (!info.State.Running) await existing.start();

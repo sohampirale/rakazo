@@ -22,11 +22,13 @@ import {
   containerNameFor,
   controlPortPublicationMatches,
   homeVolumeMatches,
+  hostCodingMountsMatch,
   hostComputerUser,
   legacyNetworkOwnedSolelyBy,
   parseMemoryBytes,
   publishedLoopbackControlHostPort,
   resolveComputerControlEndpoint,
+  resolveHostCodingMounts,
   resolveScreenNetworkMode,
   resolveScreenPublishTarget,
   resolveSpaceComputerLimit,
@@ -826,5 +828,75 @@ describe("computer home storage", () => {
     );
     // Steady state waits on Xvfb instead of polling, so the trap runs immediately.
     expect(start).toMatch(/^wait "\$XVFB_PID"$/m);
+  });
+
+  describe("host coding directory bind mounts", () => {
+    it("returns empty mounts when host coding directory is not set", () => {
+      expect(resolveHostCodingMounts(undefined)).toEqual([]);
+      expect(resolveHostCodingMounts("")).toEqual([]);
+      expect(hostCodingMountsMatch(undefined, undefined, undefined)).toBe(true);
+    });
+
+    it("resolves host mounts when coding dir is provided", () => {
+      const tempDir = mkdtempSync(path.join(tmpdir(), "test-coding-"));
+      try {
+        const mounts = resolveHostCodingMounts(tempDir);
+        expect(mounts).toEqual([
+          { source: tempDir, target: tempDir },
+          { source: tempDir, target: "/home/rakazo/coding" },
+        ]);
+        mkdirSync(path.join(tempDir, "proj"));
+        const mountsWithProj = resolveHostCodingMounts(tempDir);
+        expect(mountsWithProj).toEqual([
+          { source: tempDir, target: tempDir },
+          { source: tempDir, target: "/home/rakazo/coding" },
+          { source: path.join(tempDir, "proj"), target: "/proj" },
+          { source: path.join(tempDir, "proj"), target: "/home/rakazo/proj" },
+        ]);
+      } finally {
+        rmSync(tempDir, { recursive: true, force: true });
+      }
+    });
+
+    it("injects host coding directory binds into containerCreateOptions", () => {
+      const tempDir = mkdtempSync(path.join(tmpdir(), "test-binds-"));
+      try {
+        const options = containerCreateOptions({
+          name: "test-bot",
+          image: COMPUTER_IMAGE,
+          botId: "test-bot",
+          spaceId: "test-space",
+          homePath: "/var/rakazo/homes/test-bot",
+          hostCodingDir: tempDir,
+        });
+        expect(options.HostConfig.Binds).toEqual([
+          "/var/rakazo/homes/test-bot:/home/rakazo",
+          `${tempDir}:${tempDir}`,
+          `${tempDir}:/home/rakazo/coding`,
+        ]);
+      } finally {
+        rmSync(tempDir, { recursive: true, force: true });
+      }
+    });
+
+    it("evaluates hostCodingMountsMatch against existing container binds", () => {
+      const tempDir = mkdtempSync(path.join(tmpdir(), "test-match-"));
+      try {
+        expect(hostCodingMountsMatch(["/var/rakazo/homes/test-bot:/home/rakazo"], undefined, tempDir)).toBe(false);
+        expect(
+          hostCodingMountsMatch(
+            [
+              "/var/rakazo/homes/test-bot:/home/rakazo",
+              `${tempDir}:${tempDir}`,
+              `${tempDir}:/home/rakazo/coding`,
+            ],
+            undefined,
+            tempDir,
+          ),
+        ).toBe(true);
+      } finally {
+        rmSync(tempDir, { recursive: true, force: true });
+      }
+    });
   });
 });

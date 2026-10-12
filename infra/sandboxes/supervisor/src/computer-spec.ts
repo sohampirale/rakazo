@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { existsSync } from "node:fs";
 import path from "node:path";
 import { MAX_DESKTOP_DISPLAY, screenPorts } from "@rakazo/core/node/desktop-runtime";
 import type Docker from "dockerode";
@@ -208,6 +209,41 @@ export function homeVolumeMatches(
   );
 }
 
+export interface HostCodingMount {
+  source: string;
+  target: string;
+}
+
+export function resolveHostCodingMounts(
+  hostCodingDir = process.env.RAKAZO_HOST_CODING_DIR?.trim(),
+): HostCodingMount[] {
+  if (!hostCodingDir) return [];
+  const mounts: HostCodingMount[] = [
+    { source: hostCodingDir, target: hostCodingDir },
+    { source: hostCodingDir, target: "/home/rakazo/coding" },
+  ];
+  const projPath = path.join(hostCodingDir, "proj");
+  if (existsSync(projPath)) {
+    mounts.push({ source: projPath, target: "/proj" });
+    mounts.push({ source: projPath, target: "/home/rakazo/proj" });
+  }
+  return mounts;
+}
+
+export function hostCodingMountsMatch(
+  binds: Docker.ContainerInspectInfo["HostConfig"]["Binds"] | undefined,
+  mounts: Docker.ContainerInspectInfo["HostConfig"]["Mounts"] | undefined,
+  hostCodingDir = process.env.RAKAZO_HOST_CODING_DIR?.trim(),
+): boolean {
+  const desiredMounts = resolveHostCodingMounts(hostCodingDir);
+  if (desiredMounts.length === 0) return true;
+  return desiredMounts.every(
+    (m) =>
+      binds?.some((b) => b.startsWith(`${m.source}:${m.target}`)) ||
+      mounts?.some((dm) => dm.Source === m.source && dm.Target === m.target),
+  );
+}
+
 export interface ComputerCreateInput {
   name: string;
   image: string;
@@ -219,6 +255,7 @@ export interface ComputerCreateInput {
   controlToken?: string;
   networkMode?: string;
   publishControlPort?: boolean;
+  hostCodingDir?: string;
 }
 
 interface PointerInput {
@@ -236,6 +273,7 @@ export type SandboxInput =
 
 export function containerCreateOptions(input: ComputerCreateInput) {
   const ports = computerPortBindings(input.publishControlPort);
+  const codingMounts = resolveHostCodingMounts(input.hostCodingDir);
   return {
     Image: input.image,
     name: input.name,
@@ -270,9 +308,20 @@ export function containerCreateOptions(input: ComputerCreateInput) {
                   Subpath: input.homeVolume.subpath,
                 } as Docker.MountSettings["VolumeOptions"],
               },
+              ...codingMounts.map((m) => ({
+                Type: "bind" as const,
+                Source: m.source,
+                Target: m.target,
+              })),
             ],
           }
-        : { Binds: [`${input.homePath}:/home/rakazo`], Mounts: undefined }),
+        : {
+            Binds: [
+              `${input.homePath}:/home/rakazo`,
+              ...codingMounts.map((m) => `${m.source}:${m.target}`),
+            ],
+            Mounts: undefined,
+          }),
       PortBindings: ports.PortBindings,
       ShmSize: 256 * 1024 * 1024,
       CapDrop: ["ALL"],
