@@ -46,24 +46,35 @@ git push origin main
 
 ---
 
-## 4. AI Model Configuration Guide
+## 4. AI Model Configuration Guide & Grok Bot Setup
 
 Rakazo operates through provider-neutral adapters. For OpenRouter:
 
-### Free Tier with $\ge \$10$ Credits
-Accounts with $\ge \$10$ in credits receive **1,000 requests/day** for free on `:free` models without consuming account balance.
+### Free Tier Limits (Official OpenRouter Policy)
+- **Accounts with < $10 lifetime credits**: **50 requests/day**, 20 requests/minute.
+- **Accounts with $\ge \$10$ lifetime credits**: **1,000 requests/day**, 20 requests/minute (permanent upgrade; requests on `:free` models do NOT deduct from your purchased balance).
+*(Note: There is no 10,000 requests/day tier on OpenRouter; 1,000 RPD is the max free allocation).*
 
-Recommended multimodal models:
-- `google/gemma-4-31b-it:free` (Recommended for high precision & vision)
-- `google/gemma-4-26b-a4b-it:free` (Low latency MoE)
-- `qwen/qwen3.8-27b:free` (Visual reasoning leader)
+### Live Benchmark & Recommended Multimodal Models
+
+For Rakazo to function as an autonomous Grok bot clone, the model must support:
+1. **JSON Function / Tool Calling** (`browser_*`, `computer_*`, `file_*`, `web_*`).
+2. **Vision / Multimodal Input** (`computer_observe` desktop screenshots).
+3. **High Upstream Uptime** without shared pool throttling.
+
+| Model ID | Context | Modalities | Tool Calling | Live Status & Benchmark |
+| :--- | :--- | :--- | :--- | :--- |
+| **`dots-studio/dots-3-note-preview:free`** *(Top Pick)* | **512k** | Text + Image | ✅ Flawless | **Recommended**: Instant response via AtlasCloud, zero upstream 429s, native vision support in Rakazo. |
+| **`google/gemma-4-31b-it:free`** | **262k** | Text + Image + Video | ✅ Supported | High reasoning, but subject to intermittent Google AI Studio shared pool throttling. |
+| **`google/gemma-4-26b-a4b-it:free`** | **262k** | Text + Image + Video | ✅ Supported | Low latency MoE, also shares Google AI Studio pool. |
 
 Configure in `.env`:
 ```env
 OPENROUTER_API_KEY=sk-or-v1-...
 PI_DEFAULT_PROVIDER=openrouter
-PI_DEFAULT_MODEL=google/gemma-4-31b-it:free
+PI_DEFAULT_MODEL=dots-studio/dots-3-note-preview:free
 ```
+
 
 ---
 
