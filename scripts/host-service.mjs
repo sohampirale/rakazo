@@ -105,18 +105,32 @@ function handleTunnelOutput(data) {
       writeFileSync("/home/soham/RAKAZO_PUBLIC_URL.txt", `${publicUrl}\n`);
     } catch {}
 
-    // Send WhatsApp notification to Soham (+91 8208363244)
-    try {
-      console.log("📱 Sending WhatsApp notification with public link...");
-      const notify = spawn("python3", [
-        "/home/soham/.gemini/config/skills/whatsapp-sender/scripts/send_whatsapp.py",
-        "--text",
-        `🚀 Rakazo Grok Bot is online!\nAccess your bots from anywhere:\n${publicUrl}`,
-      ]);
-      notify.stdout.on("data", (d) => process.stdout.write(d.toString()));
-    } catch (err) {
-      console.error("Could not send WhatsApp notification:", err);
-    }
+    // Send WhatsApp notification to Soham (+91 8208363244) with auto-retry
+    const sendNotification = async (url, maxAttempts = 6) => {
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+          console.log(`📱 Sending WhatsApp notification (attempt ${attempt}/${maxAttempts})...`);
+          const exitCode = await new Promise((resolve) => {
+            const notify = spawn("python3", [
+              "/home/soham/.gemini/config/skills/whatsapp-sender/scripts/send_whatsapp.py",
+              "--text",
+              `🚀 Rakazo Grok Bot is online!\nAccess your bots from anywhere:\n${url}`,
+            ]);
+            notify.stdout.on("data", (d) => process.stdout.write(d.toString()));
+            notify.stderr.on("data", (d) => process.stderr.write(d.toString()));
+            notify.on("close", resolve);
+          });
+          if (exitCode === 0) {
+            console.log("✅ WhatsApp delivery confirmed!");
+            return;
+          }
+        } catch (err) {
+          console.error(`WhatsApp notification error on attempt ${attempt}:`, err);
+        }
+        await new Promise((r) => setTimeout(r, 4000));
+      }
+    };
+    void sendNotification(publicUrl);
   }
 }
 
