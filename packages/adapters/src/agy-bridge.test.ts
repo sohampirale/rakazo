@@ -4,6 +4,7 @@ import {
   createAgyBridge,
   DEFAULT_AGY_MODELS,
   parseToolCall,
+  // @ts-expect-error local script module
 } from "../../../scripts/agy-bridge/server.mjs";
 import { PiAgentRuntime } from "./pi-runtime.js";
 

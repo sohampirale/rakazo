@@ -158,6 +158,37 @@ export const builtinAgentTools: ConnectorTool[] = [
     },
   },
   {
+    name: "antigravity_run",
+    description:
+      "Dispatch a coding, refactoring, or software engineering task to the local Google Antigravity CLI (agy) on the host machine. Runs completely asynchronously in the background with zero token burn while waiting. When Antigravity completes, a completion summary is automatically delivered back to this chat.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        projectPath: {
+          type: "string",
+          description:
+            "Path to the codebase repository on the host machine (e.g. /home/soham/coding/proj/my-project).",
+        },
+        instructions: {
+          type: "string",
+          description: "Detailed coding instructions and objectives for the Antigravity agent.",
+        },
+      },
+      required: ["projectPath", "instructions"],
+    },
+  },
+  {
+    name: "antigravity_status",
+    description: "Check the status or recent log output of an Antigravity background task by jobId.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        jobId: { type: "string", description: "The jobId returned by antigravity_run." },
+      },
+      required: ["jobId"],
+    },
+  },
+  {
     name: "open_path",
     description:
       "Open a workspace file or an http(s) URL in its default graphical application on this bot's computer and return the resulting screen.",

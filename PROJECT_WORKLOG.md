@@ -84,6 +84,7 @@ PI_DEFAULT_MODEL=dots-studio/dots-3-note-preview:free
 - [x] Docker desktop sandbox & supervisor integration
 - [x] Human Takeover & interactive noVNC screen bridge verified
 - [x] GitHub fork (`sohampirale/rakazo`) initialized & remotes configured
-- [ ] Connect funded OpenRouter key and verify end-to-end task execution in chat
+- [x] Connect funded OpenRouter key and verify 1,000 free RPD tier
+- [x] Implement Antigravity Headless Coding Agent Bridge (`antigravity_run` / `antigravity_status` with zero token burn while waiting and automatic thread notification)
 - [ ] Test autonomous web routines (LinkedIn navigation, data gathering)
 - [ ] Explore custom skill playbooks & teaching sessions ("Teach a task")
